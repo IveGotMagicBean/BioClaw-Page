@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>BioClaw — AI Bioinformatics Research Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f3ee;--bg2:#edeae3;--surface:#fff;--surface2:#f9f8f4;
+  --ink:#1a1a16;--ink2:#5c5b52;--ink3:#9b9a90;
+  --accent:#1a5c38;--accent2:#22764a;
+  --accent-light:#e8f5ee;--accent-mid:#b8dfc8;
+  --border:#e0ddd5;--border2:#ccc9be;
+  --serif:'DM Serif Display',serif;--sans:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.05);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.10),0 2px 8px rgba(0,0,0,.06);
+}
+html.dark{
+  --bg:#0f100e;--bg2:#161714;--surface:#1c1e1a;--surface2:#232520;
+  --ink:#eae8e0;--ink2:#8a8880;--ink3:#4e4e48;
+  --accent:#4dbb78;--accent2:#5ed488;
+  --accent-light:#0d2318;--accent-mid:#1a4530;
+  --border:#282a25;--border2:#363830;
+  --shadow:0 1px 3px rgba(0,0,0,.2),0 4px 16px rgba(0,0,0,.18);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.32),0 2px 8px rgba(0,0,0,.18);
+}
+@media(prefers-color-scheme:dark){
+  :root:not(.light){
+    --bg:#0f100e;--bg2:#161714;--surface:#1c1e1a;--surface2:#232520;
+    --ink:#eae8e0;--ink2:#8a8880;--ink3:#4e4e48;
+    --accent:#4dbb78;--accent2:#5ed488;
+    --accent-light:#0d2318;--accent-mid:#1a4530;
+    --border:#282a25;--border2:#363830;
+    --shadow:0 1px 3px rgba(0,0,0,.2),0 4px 16px rgba(0,0,0,.18);
+    --shadow-lg:0 8px 32px rgba(0,0,0,.32),0 2px 8px rgba(0,0,0,.18);
+  }
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;transition:background .3s,color .3s;overflow-x:hidden;}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;height:58px;padding:0 2.5rem;display:flex;align-items:center;justify-content:space-between;background:rgba(245,243,238,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);transition:background .3s;}
+html.dark nav{background:rgba(15,16,14,.92);}
+@media(prefers-color-scheme:dark){html:not(.light) nav{background:rgba(15,16,14,.92);}}
+.logo{font-family:var(--mono);font-size:1rem;font-weight:500;color:var(--accent);text-decoration:none;display:flex;align-items:center;gap:.6rem;}
+.logo-img{width:32px;height:32px;border-radius:8px;object-fit:contain;}
+.logo-mark{width:32px;height:32px;border-radius:8px;background:var(--accent);display:flex;align-items:center;justify-content:center;transition:transform .2s;}
+.logo:hover .logo-mark{transform:rotate(-8deg);}
+.logo-mark svg{width:16px;height:16px;fill:#fff;}
+.nav-links{display:flex;gap:2rem;list-style:none;}
+.nav-links a{font-size:.8rem;color:var(--ink2);text-decoration:none;transition:color .15s;}
+.nav-links a:hover{color:var(--ink);}
+.nav-r{display:flex;align-items:center;gap:.6rem;}
+.icon-btn{height:30px;min-width:30px;border-radius:100px;border:1px solid var(--border);background:transparent;color:var(--ink3);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;padding:0 .35rem;}
+.icon-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light);}
+.icon-btn svg{width:14px;height:14px;}
+.sun{display:none;}html.dark .sun{display:block;}html.dark .moon{display:none;}
+@media(prefers-color-scheme:dark){html:not(.light):not(.dark) .sun{display:block;}html:not(.light):not(.dark) .moon{display:none;}}
+.gh-btn{display:inline-flex;align-items:center;gap:.4rem;font-family:var(--mono);font-size:.72rem;font-weight:500;color:var(--ink2);text-decoration:none;border:1px solid var(--border);background:transparent;padding:.35rem .85rem;border-radius:100px;transition:all .2s;}
+.gh-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light);}
+.gh-btn svg{width:13px;height:13px;}
+
+/* PROMO BANNER */
+.promo-banner{position:relative;z-index:101;background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;font-family:var(--sans);overflow:hidden;}
+.promo-inner{max-width:1000px;margin:0 auto;padding:.55rem 3rem;display:flex;align-items:center;justify-content:center;gap:.85rem;flex-wrap:wrap;font-size:.82rem;}
+.promo-spark{font-size:.95rem;line-height:1;}
+.promo-text{font-weight:300;}
+.promo-text b{font-weight:600;}
+.promo-cta{display:inline-flex;align-items:center;gap:.35rem;font-family:var(--mono);font-size:.72rem;font-weight:600;color:var(--accent);background:#fff;padding:.28rem .85rem;border-radius:100px;text-decoration:none;transition:transform .2s,box-shadow .2s;white-space:nowrap;}
+.promo-cta:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,.2);}
+.promo-cta svg{width:11px;height:11px;}
+.promo-close{position:absolute;right:1rem;top:50%;transform:translateY(-50%);background:transparent;border:none;color:rgba(255,255,255,.7);cursor:pointer;font-size:1.15rem;line-height:1;padding:.15rem .4rem;border-radius:6px;transition:all .2s;}
+.promo-close:hover{color:#fff;background:rgba(255,255,255,.18);}
+.promo-banner::after{content:'';position:absolute;top:0;left:-60%;width:35%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.28),transparent);transform:skewX(-20deg);animation:promoShine 5s ease-in-out infinite;pointer-events:none;}
+@keyframes promoShine{0%{left:-60%;}45%,100%{left:150%;}}
+@media(max-width:640px){.promo-close{display:none;}.promo-inner{font-size:.74rem;padding:.5rem 1.2rem;gap:.5rem;}}
+
+/* HERO */
+.hero{max-width:1000px;margin:0 auto;padding:7rem 2.5rem 5rem;display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;}
+.hero-tag{display:inline-flex;align-items:center;gap:.45rem;font-family:var(--mono);font-size:.75rem;letter-spacing:.06em;color:var(--accent);border:1px solid var(--accent-mid);background:var(--accent-light);padding:.28rem .8rem;border-radius:100px;margin-bottom:1.75rem;}
+.hero-tag::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--accent);}
+.hero h1{font-family:var(--serif);font-size:clamp(2.8rem,5.5vw,4.2rem);line-height:1.08;letter-spacing:-.01em;margin-bottom:1.25rem;}
+.hero h1 em{font-style:italic;color:var(--accent);}
+.hero-desc{font-size:1rem;font-weight:300;color:var(--ink2);line-height:1.75;margin-bottom:2.25rem;max-width:420px;}
+.hero-actions{display:flex;gap:.65rem;flex-wrap:wrap;}
+.btn-primary{font-family:var(--mono);font-size:.78rem;font-weight:500;color:#fff;background:var(--accent);border:none;padding:.65rem 1.4rem;border-radius:8px;text-decoration:none;display:inline-flex;align-items:center;gap:.4rem;transition:all .2s;box-shadow:0 2px 12px rgba(26,92,56,.25);}
+.btn-primary:hover{background:var(--accent2);transform:translateY(-1px);}
+.btn-primary svg{width:13px;height:13px;}
+.hero-right{position:relative;}
+.terminal{background:#1a1a16;color:#d4d0c8;border:1px solid #2a2a25;border-radius:14px;font-family:var(--mono);font-size:.75rem;overflow:hidden;box-shadow:var(--shadow-lg);}
+.term-bar{background:rgba(255,255,255,.06);padding:.7rem 1rem;display:flex;align-items:center;gap:.5rem;border-bottom:1px solid rgba(255,255,255,.06);}
+.tdot{width:10px;height:10px;border-radius:50%;}
+.tdot.r{background:#ff5f57;}.tdot.y{background:#febc2e;}.tdot.g{background:#28c840;}
+.term-title{margin-left:.5rem;font-size:.68rem;color:rgba(255,255,255,.3);}
+.term-body{padding:1.25rem 1.25rem 1.5rem;line-height:1.9;}
+.t-dim{color:rgba(255,255,255,.25);}.t-green{color:#4dbb78;}.t-yellow{color:#f0c060;}.t-white{color:#e8e6de;}
+.t-cursor{display:inline-block;width:7px;height:13px;background:#4dbb78;vertical-align:middle;margin-left:2px;animation:blink 1.1s step-end infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+.hero-float{position:absolute;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.6rem .9rem;font-family:var(--mono);font-size:.68rem;color:var(--ink2);box-shadow:var(--shadow);display:flex;align-items:center;gap:.5rem;white-space:nowrap;animation:float 4s ease-in-out infinite;}
+.hero-float .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0;}
+.hero-float.f1{bottom:-16px;left:-24px;}
+.hero-float.f2{top:-16px;right:-16px;animation-delay:1.5s;}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+
+/* SECTION */
+.section{max-width:1000px;margin:0 auto;padding:4.5rem 2.5rem;}
+.s-label{font-family:var(--mono);font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:.7rem;}
+.s-title{font-family:var(--serif);font-size:clamp(1.8rem,3.5vw,2.6rem);line-height:1.15;letter-spacing:-.01em;margin-bottom:.75rem;}
+.s-desc{font-size:.92rem;font-weight:300;color:var(--ink2);line-height:1.7;max-width:500px;margin-bottom:2.5rem;}
+.divider{border:none;border-top:1px solid var(--border);}
+
+/* DEMO CAROUSEL */
+.demo-scroll-outer{overflow:hidden;position:relative;}
+.demo-scroll-outer::before,.demo-scroll-outer::after{content:'';position:absolute;top:0;bottom:0;width:80px;z-index:10;pointer-events:none;}
+.demo-scroll-outer::before{left:0;background:linear-gradient(to right,var(--bg),transparent);}
+.demo-scroll-outer::after{right:0;background:linear-gradient(to left,var(--bg),transparent);}
+.demo-scroll-track{display:flex;gap:1rem;padding:1rem 0 1.5rem;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-ms-overflow-style:none;scroll-behavior:smooth;align-items:center;}
+.demo-scroll-track::-webkit-scrollbar{display:none;}
+.demo-scroll-card{flex:0 0 240px;scroll-snap-align:center;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem 1.25rem;display:flex;flex-direction:column;transition:transform .3s cubic-bezier(.34,1.4,.64,1),box-shadow .3s,border-color .3s;cursor:default;}
+.demo-scroll-card:hover{box-shadow:var(--shadow-lg);border-color:var(--accent-mid);transform:translateY(-4px);}
+.demo-scroll-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.85rem;}
+.demo-scroll-num{font-family:var(--mono);font-size:.6rem;color:var(--accent);margin-bottom:.4rem;letter-spacing:.05em;}
+.demo-scroll-card h3{font-size:.88rem;font-weight:500;margin-bottom:.35rem;}
+.demo-scroll-card p{font-size:.76rem;color:var(--ink2);line-height:1.55;flex:1;}
+.demo-scroll-arrow{display:inline-block;margin-top:.65rem;font-size:.72rem;color:var(--ink3);transition:color .2s,transform .2s;}
+.demo-scroll-card:hover .demo-scroll-arrow{color:var(--accent);transform:translate(2px,-1px);}
+.demo-nav{display:flex;align-items:center;justify-content:center;gap:1rem;padding:.75rem 2.5rem .5rem;}
+.demo-dots{display:flex;gap:.45rem;align-items:center;}
+
+/* TOOLS CLOUD */
+.tools-cloud{position:relative;width:100%;min-height:420px;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.cloud-canvas{position:relative;width:100%;max-width:820px;height:420px;margin:0 auto;}
+.cloud-word{position:absolute;font-weight:500;cursor:default;transition:all .35s cubic-bezier(.34,1.4,.64,1);white-space:nowrap;user-select:none;letter-spacing:-.01em;}
+.cloud-word.cw-lg{font-family:var(--serif);font-weight:400;}
+.cloud-word.cw-sm{font-family:var(--sans);font-weight:500;}
+.cloud-word:hover{transform:scale(1.15) translateY(-4px)!important;z-index:10;filter:brightness(1.15);}
+.cloud-word .cw-tip{position:absolute;left:50%;top:100%;transform:translateX(-50%);margin-top:8px;background:var(--ink);color:var(--bg);font-family:var(--sans);font-size:.72rem;font-weight:400;padding:.4rem .8rem;border-radius:8px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20;box-shadow:var(--shadow-lg);}
+.cloud-word:hover .cw-tip{opacity:1;}
+@keyframes cloudFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-5px);}}
+@keyframes cloudFloat2{0%,100%{transform:translateY(0);}50%{transform:translateY(4px);}}
+@keyframes cloudFloat3{0%,100%{transform:translateX(0);}50%{transform:translateX(4px);}}
+
+/* CITATION */
+.cite-wrap{background:#1a1a16;border:1px solid #2a2a25;border-radius:14px;overflow:hidden;box-shadow:var(--shadow);margin-top:1rem;}
+.cite-header{background:rgba(255,255,255,.06);padding:.65rem 1.25rem;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:space-between;}
+.cite-header-title{font-family:var(--mono);font-size:.7rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.06em;}
+.cite-copy{font-family:var(--mono);font-size:.68rem;color:rgba(255,255,255,.4);background:transparent;border:1px solid rgba(255,255,255,.1);padding:.25rem .6rem;border-radius:5px;cursor:pointer;transition:all .15s;}
+.cite-copy:hover{border-color:#4dbb78;color:#4dbb78;}
+.cite-body{font-family:var(--mono);font-size:.72rem;line-height:1.6;padding:1.25rem;overflow-x:auto;color:rgba(255,255,255,.55);white-space:pre-wrap;}
+.cite-links{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.25rem;}
+.cite-links a{font-family:var(--mono);font-size:.75rem;color:var(--accent);text-decoration:none;display:inline-flex;align-items:center;gap:.35rem;padding:.35rem .75rem;background:var(--accent-light);border:1px solid var(--accent-mid);border-radius:6px;transition:all .15s;}
+.cite-links a:hover{background:var(--accent-mid);}
+
+/* ARCH */
+.arch-card{background:#1a1a16;border:1px solid #2a2a25;border-radius:14px;overflow:hidden;box-shadow:var(--shadow-lg);}
+.arch-bar{padding:.65rem 1.1rem;background:rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:.45rem;}
+.arch-inner{padding:1.5rem 1.75rem 1.25rem;font-family:var(--mono);font-size:.75rem;color:rgba(255,255,255,.45);display:flex;flex-direction:column;align-items:center;}
+.arch-flow{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;justify-content:center;}
+.arch-node{white-space:nowrap;}
+.arch-arrow{color:rgba(255,255,255,.25);}
+.arch-vline{color:rgba(255,255,255,.25);line-height:1.8;text-align:center;}
+.arch-sdk{margin:.15rem 0;}
+.arch-box{border:1px solid rgba(255,255,255,.15);border-radius:8px;margin:.5rem 0;width:100%;max-width:420px;overflow:hidden;}
+.arch-box-title{text-align:center;padding:.55rem;border-bottom:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.55);font-size:.72rem;}
+.arch-box-tools{display:flex;flex-wrap:wrap;gap:.35rem .7rem;padding:.75rem 1rem;justify-content:center;}
+.arch-notes{width:100%;margin-top:1.25rem;display:flex;flex-direction:column;gap:.35rem;font-size:.72rem;align-self:flex-start;}
+.ag{color:#4dbb78;}.aw{color:#e8e6de;}
+
+/* INSTALL */
+.install-card{background:#1a1a16;border:1px solid #2a2a25;border-radius:14px;overflow:hidden;box-shadow:var(--shadow);}
+.install-bar2{padding:.65rem 1.1rem;background:rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:.45rem;}
+.install-body{padding:1.25rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+.install-cmd{font-family:var(--mono);font-size:.8rem;color:#e8e6de;}
+.install-cmd .p{color:#4dbb78;margin-right:.5rem;}
+.cpbtn{font-family:var(--mono);font-size:.68rem;color:rgba(255,255,255,.4);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);padding:.3rem .7rem;border-radius:6px;cursor:pointer;transition:all .15s;}
+.cpbtn:hover{border-color:#4dbb78;color:#4dbb78;}
+.install-note{padding:.6rem 1.5rem 1rem;font-size:.75rem;color:rgba(255,255,255,.35);border-top:1px solid rgba(255,255,255,.06);}
+.install-note a{color:#4dbb78;text-decoration:none;}
+
+/* GALLERY */
+.gallery-outer{overflow:hidden;position:relative;}
+.gallery-outer::before,.gallery-outer::after{content:'';position:absolute;top:0;bottom:0;width:120px;z-index:10;pointer-events:none;}
+.gallery-outer::before{left:0;background:linear-gradient(to right,var(--bg),transparent);}
+.gallery-outer::after{right:0;background:linear-gradient(to left,var(--bg),transparent);}
+.gallery-track{display:flex;gap:2.5rem;padding:1.5rem 0 2rem;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-ms-overflow-style:none;scroll-behavior:smooth;align-items:center;}
+.gallery-track::-webkit-scrollbar{display:none;}
+.gallery-card{flex:0 0 auto;scroll-snap-align:center;display:flex;flex-direction:column;align-items:center;transition:transform .4s cubic-bezier(.34,1.3,.64,1),opacity .4s ease,filter .4s ease;position:relative;opacity:.4;filter:blur(2px) saturate(.7);}
+.gallery-card.gc-active{opacity:1;filter:blur(0) saturate(1);}
+.gallery-card.gc-near{opacity:.65;filter:blur(1px) saturate(.85);}
+.gallery-card:hover{transform:translateY(-6px);}
+.gc-label{display:none;}
+.gc-body{display:flex;justify-content:center;align-items:center;padding:0;}
+.gc-foot{display:none;}
+.gc-plat-label{font-family:var(--mono);font-size:.72rem;color:var(--ink2);text-align:center;margin-top:.85rem;letter-spacing:.02em;}
+
+/* PHONE */
+.phone{width:270px;height:520px;flex-shrink:0;background:linear-gradient(145deg,#2a2a2a,#1a1a1a);border-radius:40px;border:3px solid #333;box-shadow:0 0 0 1px rgba(255,255,255,.08),inset 0 1px 0 rgba(255,255,255,.06),0 24px 56px rgba(0,0,0,.45),0 8px 16px rgba(0,0,0,.2);position:relative;overflow:hidden;}
+.phone::before{content:'';position:absolute;inset:0;border-radius:37px;border:1px solid rgba(255,255,255,.06);pointer-events:none;z-index:30;}
+.phone-notch{width:90px;height:22px;background:#1a1a1a;border-radius:0 0 16px 16px;position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:20;}
+.phone-notch::after{content:'';width:8px;height:8px;border-radius:50%;background:#111;border:1.5px solid #222;position:absolute;top:5px;right:22px;}
+.phone-screen{position:absolute;inset:3px;border-radius:37px;overflow:hidden;display:flex;flex-direction:column;}
+.phone-bar{height:22px;background:inherit;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.phone-bar::after{content:'';width:60px;height:4px;border-radius:2px;background:rgba(255,255,255,.18);}
+
+/* DESKTOP */
+.desktop-mac{width:100%;border-radius:10px 10px 0 0;overflow:hidden;border:2px solid #2a2a25;border-bottom:none;box-shadow:var(--shadow-lg);background:#1a1a16;}
+.mac-bar{height:30px;display:flex;align-items:center;gap:6px;padding:0 12px;flex-shrink:0;background:rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06);}
+.mac-dot{width:10px;height:10px;border-radius:50%;}
+.mac-stand{width:48px;height:12px;border-radius:0 0 6px 6px;margin:0 auto;}
+.dt-body{overflow:hidden;max-height:450px;}
+.dt-body video{width:100%;display:block;}
+.gallery-card.wide{flex-shrink:0;}
+.gallery-card.wide .gc-body{padding:.85rem .75rem;width:780px;}
+
+/* GALLERY NAV */
+.gallery-nav{display:flex;align-items:center;justify-content:center;gap:1rem;padding:1rem 2.5rem .5rem;}
+.g-arrow{width:32px;height:32px;border-radius:50%;background:transparent;border:1px solid var(--border);color:var(--ink3);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
+.g-arrow:hover{border-color:var(--accent);color:var(--accent);}
+.gallery-dots{display:flex;gap:.45rem;align-items:center;}
+.g-dot{width:8px;height:8px;border-radius:50%;background:#333;cursor:pointer;transition:all .25s;}
+.g-dot:hover{background:var(--ink3);}
+.g-dot.active{width:24px;border-radius:4px;background:var(--accent);}
+
+/* SKILLS */
+.skill-groups{display:flex;flex-direction:column;gap:1.25rem;margin-top:2rem;}
+.skill-group{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.25rem 1.35rem;box-shadow:var(--shadow);}
+.skill-group h4{font-family:var(--mono);font-size:.68rem;font-weight:500;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.85rem;}
+.skill-tags{display:flex;flex-wrap:wrap;gap:.4rem;}
+.skill-tag{font-family:var(--mono);font-size:.72rem;color:var(--ink2);background:var(--surface2);border:1px solid var(--border);padding:.3rem .62rem;border-radius:6px;text-decoration:none;transition:all .15s;display:inline-block;}
+.skill-tag:hover{border-color:var(--accent-mid);color:var(--accent);background:var(--accent-light);}
+
+/* CONTACT (inline) */
+.contact-wrap{max-width:520px;margin-top:1.5rem;}
+.contact-form{display:flex;flex-direction:column;gap:1.15rem;}
+.form-field label{display:block;font-family:var(--mono);font-size:.65rem;color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.45rem;}
+.form-field input,.form-field textarea{width:100%;font-family:var(--sans);font-size:.9rem;font-weight:400;padding:.7rem .9rem;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--ink);transition:border-color .15s,box-shadow .15s;}
+.form-field input::placeholder,.form-field textarea::placeholder{color:var(--ink3);opacity:.75;}
+.form-field input:focus,.form-field textarea:focus{outline:none;border-color:var(--accent-mid);box-shadow:0 0 0 3px var(--accent-light);}
+.form-field textarea{min-height:150px;resize:vertical;line-height:1.55;}
+.contact-hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;}
+button.btn-primary{cursor:pointer;font:inherit;display:inline-flex;align-items:center;justify-content:center;}
+button.btn-primary:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+.contact-submit{margin-top:.25rem;}
+.contact-status{font-family:var(--mono);font-size:.72rem;margin-top:.75rem;color:var(--accent);}
+.contact-status.err{color:#c45c4a;}
+
+/* REVEAL */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease;}
+.reveal.visible{opacity:1;transform:translateY(0);}
+
+/* FOOTER */
+footer{border-top:1px solid var(--border);padding:1.5rem 2.5rem;display:flex;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:.75rem;color:var(--ink3);flex-wrap:wrap;gap:.75rem;}
+footer a{color:var(--ink3);text-decoration:none;transition:color .15s;}
+footer a:hover{color:var(--accent);}
+
+
+/* ===== WeChat QR Modal ===== */
+.wc-fab{position:fixed;bottom:2rem;right:2rem;z-index:500;width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 24px rgba(26,92,56,.38),0 0 0 0 rgba(26,92,56,.25);transition:transform .22s cubic-bezier(.34,1.4,.64,1),box-shadow .22s;animation:wc-pulse 2.8s ease-in-out infinite;}
+.wc-fab:hover{transform:scale(1.12) translateY(-2px);box-shadow:0 8px 32px rgba(26,92,56,.48),0 0 0 8px rgba(26,92,56,.08);}
+.wc-fab svg{width:27px;height:27px;fill:#fff;flex-shrink:0;}
+@keyframes wc-pulse{0%,100%{box-shadow:0 4px 24px rgba(26,92,56,.38),0 0 0 0 rgba(26,92,56,.18);}50%{box-shadow:0 4px 24px rgba(26,92,56,.38),0 0 0 10px rgba(26,92,56,.0);}}
+.wc-overlay{position:fixed;inset:0;z-index:499;background:rgba(0,0,0,0);pointer-events:none;transition:background .35s;}
+.wc-overlay.open{background:rgba(0,0,0,.52);pointer-events:auto;backdrop-filter:blur(8px);}
+.wc-modal{position:fixed;z-index:501;top:50%;left:50%;transform:translate(-50%,-48%) scale(.94);width:min(440px,92vw);background:var(--surface);border:1px solid var(--border);border-radius:28px;padding:0;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.18),0 8px 32px rgba(0,0,0,.10),0 0 0 1px rgba(26,92,56,.07);opacity:0;pointer-events:none;transition:transform .4s cubic-bezier(.34,1.3,.64,1),opacity .3s ease;}
+.wc-modal.open{transform:translate(-50%,-50%) scale(1);opacity:1;pointer-events:auto;}
+.wc-modal-head{background:linear-gradient(135deg,var(--accent-light) 0%,var(--bg2) 100%);border-bottom:1px solid var(--border);padding:1.5rem 1.75rem 1.25rem;display:flex;align-items:center;justify-content:space-between;}
+.wc-modal-title-wrap{display:flex;align-items:center;gap:.65rem;}
+.wc-status-dot{width:9px;height:9px;border-radius:50%;background:#07c160;flex-shrink:0;box-shadow:0 0 0 3px rgba(7,193,96,.18);animation:wc-dot-blink 2s ease-in-out infinite;}
+@keyframes wc-dot-blink{0%,100%{opacity:1;}50%{opacity:.4;}}
+.wc-modal-title{font-family:var(--mono);font-size:.88rem;font-weight:500;color:var(--ink);letter-spacing:.02em;}
+.wc-close{width:30px;height:30px;border-radius:50%;border:1px solid var(--border2);background:var(--surface);cursor:pointer;color:var(--ink3);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .18s;}
+.wc-close:hover{border-color:var(--accent-mid);color:var(--accent);background:var(--accent-light);}
+.wc-close svg{width:11px;height:11px;}
+.wc-modal-body{padding:2rem 2rem 2.25rem;display:flex;flex-direction:column;align-items:center;gap:1.35rem;}
+.wc-qr-wrap{width:220px;height:220px;border-radius:18px;overflow:hidden;border:1px solid var(--border);background:var(--surface2);display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 4px 24px rgba(0,0,0,.07);}
+.wc-qr-wrap img{width:100%;height:100%;object-fit:cover;display:block;}
+.wc-qr-shine{position:absolute;inset:0;border-radius:18px;background:linear-gradient(135deg,rgba(255,255,255,.14) 0%,transparent 55%);pointer-events:none;}
+.wc-modal-sub{font-size:.85rem;color:var(--ink2);text-align:center;line-height:1.7;font-family:var(--sans);}
+.wc-modal-hint{font-family:var(--mono);font-size:.72rem;color:var(--ink3);text-align:center;padding:.55rem 1.1rem;background:var(--surface2);border:1px solid var(--border);border-radius:100px;letter-spacing:.02em;}
+
+@media(max-width:720px){
+  .nav-links{display:none;}
+  .hero{grid-template-columns:1fr;padding:4rem 1.5rem 3rem;gap:2.5rem;}
+  .hero-float{display:none;}
+  .section{padding:3rem 1.5rem;}
+  .gallery-track{padding:1rem 1.25rem 1.5rem;}
+  .gallery-nav{padding:.5rem 1.25rem;}
+}
+</style>
+</head>
+<body>
+
+<div class="promo-banner" id="promoBanner">
+  <div class="promo-inner">
+    <span class="promo-spark">🚀</span>
+    <span class="promo-text"><b>BioClaw is now online</b> — no install, run it right in your browser.</span>
+    <a class="promo-cta" href="https://chat.bioclaw.tech/" target="_blank" rel="noopener">
+      Try chat.bioclaw.tech
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+  <button class="promo-close" onclick="document.getElementById('promoBanner').remove()" aria-label="Dismiss">&times;</button>
+</div>
+
+<nav>
+  <a class="logo" href="index.html">
+    <img class="logo-img" src="https://raw.githubusercontent.com/Runchuan-BU/BioClaw/main/bioclaw_logo.jpg" alt="BioClaw" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+    <div class="logo-mark" style="display:none;"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg></div>
+    BioClaw
+  </a>
+  <ul class="nav-links">
+    <li><a href="#platforms">Platforms</a></li>
+    <li><a href="#demos">Capabilities</a></li>
+    <li><a href="#tools">Tools</a></li>
+    <li><a href="#arch">Architecture</a></li>
+    <li><a href="#start">Quick Start</a></li>
+    <li><a href="#citation">Citation</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <div class="nav-r">
+    <a class="icon-btn" href="zh.html" style="font-family:var(--mono);font-size:.7rem;font-weight:500;width:auto;padding:0 .6rem;text-decoration:none;gap:.25rem;">EN<span style="margin:0 .15rem;">/</span><span style="opacity:1;">中文</span></a>
+    <button class="icon-btn" onclick="toggleTheme()">
+      <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+    <a class="icon-btn" href="javascript:void(0)" onclick="openDocModal()" title="Tech Doc" aria-label="Tech Doc" style="border-color:var(--accent-mid);color:var(--accent);background:var(--accent-light);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+    </a>
+    <a class="icon-btn" href="javascript:void(0)" onclick="openEmailModal()" title="Email us" aria-label="Email">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><polyline points="3 7 12 13 21 7"/></svg>
+    </a>
+    <a class="icon-btn" href="https://github.com/Runchuan-BU/BioClaw" target="_blank" title="GitHub" aria-label="GitHub">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+    </a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="reveal">
+    <div class="hero-tag">AI · Bioinformatics · Multi-Platform</div>
+    <h1><em>BioClaw</em> — the research<br>assistant biologists <em>deserve.</em></h1>
+    <p class="hero-desc">BLAST searches, protein structure rendering, sequencing QC, literature mining — through natural language in any chat.</p>
+    <div class="hero-actions">
+      <a class="btn-primary" href="#start"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>Get Started</a>
+    </div>
+  </div>
+  <div class="hero-right reveal" style="transition-delay:.15s">
+    <div class="terminal">
+      <div class="term-bar"><div class="tdot r"></div><div class="tdot y"></div><div class="tdot g"></div><span class="term-title">BioClaw · agent session</span></div>
+      <div class="term-body">
+        <div><span class="t-dim">$</span> <span class="t-green">@BioClaw</span> <span class="t-white">BLAST this sequence against nr</span></div>
+        <div>&nbsp;</div>
+        <div><span class="t-yellow">▶ Running BLAST+</span> <span class="t-dim">ncbi/nr</span></div>
+        <div><span class="t-dim">&nbsp;&nbsp;query_length=248aa · e-value=1e-5</span></div>
+        <div>&nbsp;</div>
+        <div><span class="t-green">✓ Top hits returned</span></div>
+        <div><span class="t-dim">&nbsp;&nbsp;1. TP53_HUMAN&nbsp;&nbsp;Score=520&nbsp;&nbsp;E=0.0</span></div>
+        <div><span class="t-dim">&nbsp;&nbsp;2. TP53_MOUSE&nbsp;&nbsp;Score=498&nbsp;&nbsp;E=0.0</span></div>
+        <div><span class="t-dim">&nbsp;&nbsp;3. TP63_HUMAN&nbsp;&nbsp;Score=312&nbsp;&nbsp;E=2e-89</span></div>
+        <div>&nbsp;</div>
+        <div><span class="t-dim">$</span> <span class="t-cursor"></span></div>
+      </div>
+    </div>
+    <div class="hero-float f1"><div class="dot"></div>PyMOL render complete</div>
+    <div class="hero-float f2"><div class="dot"></div>FastQC report ready</div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<section id="platforms" style="padding:4.5rem 0;">
+  <div style="max-width:1000px;margin:0 auto;padding:0 2.5rem 1.75rem;" class="reveal">
+    <div class="s-label">Multi-Platform</div>
+    <h2 class="s-title">Works wherever your team chats</h2>
+    <p class="s-desc">One agent, every surface — real results delivered back to the conversation.</p>
+    <p style="margin-top:.75rem;font-size:.82rem;color:var(--ink3);line-height:1.65;">Channel config → <a href="https://github.com/Runchuan-BU/BioClaw/blob/main/docs/CHANNELS.md" style="color:var(--accent);">docs/CHANNELS.md</a> · Local web includes lab trace (SSE timeline) → <a href="https://github.com/Runchuan-BU/BioClaw/blob/main/docs/DASHBOARD.md" style="color:var(--accent);">docs/DASHBOARD.md</a></p>
+  </div>
+  <div class="gallery-outer">
+    <div class="gallery-track" id="galleryTrack">
+      <div class="gallery-card"><div class="gc-body"><div class="phone"><div class="phone-notch"></div><div class="phone-screen"><video src="./mp4/wechat.mp4" autoplay loop muted playsinline webkit-playsinline preload="auto" style="width:100%;height:100%;object-fit:cover;"></video></div></div></div><div class="gc-plat-label">微信 WeChat</div></div>
+      <div class="gallery-card"><div class="gc-body"><div class="phone"><div class="phone-notch"></div><div class="phone-screen"><video src="./mp4/whatsapp.mp4" autoplay loop muted playsinline webkit-playsinline preload="auto" style="width:100%;height:100%;object-fit:cover;"></video></div></div></div><div class="gc-plat-label">WhatsApp</div></div>
+      <div class="gallery-card"><div class="gc-body"><div class="phone"><div class="phone-notch"></div><div class="phone-screen"><video src="./mp4/feishu.mp4" autoplay loop muted playsinline webkit-playsinline preload="auto" style="width:100%;height:100%;object-fit:cover;"></video></div></div></div><div class="gc-plat-label">飞书 Feishu</div></div>
+      <div class="gallery-card wide"><div class="gc-body" style="padding:.85rem .75rem;"><div style="width:100%;"><div class="desktop-mac"><div class="mac-bar"><div class="mac-dot" style="background:#FF5F57;"></div><div class="mac-dot" style="background:#FEBC2E;"></div><div class="mac-dot" style="background:#28C840;"></div><div style="flex:1;text-align:center;font-size:9px;color:rgba(255,255,255,.4);font-family:sans-serif;">Discord — #bioinformatics</div></div><div class="dt-body"><video src="./mp4/discord.mp4" autoplay loop muted playsinline webkit-playsinline preload="auto"></video></div></div><div class="mac-stand" style="background:#333;"></div></div></div><div class="gc-plat-label">Discord</div></div>
+      <div class="gallery-card wide"><div class="gc-body" style="padding:.85rem .75rem;"><div style="width:100%;"><div class="desktop-mac"><div class="mac-bar"><div class="mac-dot" style="background:#FF5F57;"></div><div class="mac-dot" style="background:#FEBC2E;"></div><div class="mac-dot" style="background:#28C840;"></div><div style="flex:1;text-align:center;font-size:9px;color:rgba(255,255,255,.4);font-family:sans-serif;">Slack — #bioinformatics</div></div><div class="dt-body"><img src="./mp4/slack.jpg" alt="BioClaw on Slack" style="width:100%;height:100%;object-fit:cover;display:block;"></div></div><div class="mac-stand" style="background:#333;"></div></div></div><div class="gc-plat-label">Slack</div></div>
+      <div class="gallery-card wide"><div class="gc-body" style="padding:.85rem .75rem;"><div style="width:100%;"><div class="desktop-mac"><div class="mac-bar"><div class="mac-dot" style="background:#FF5F57;"></div><div class="mac-dot" style="background:#FEBC2E;"></div><div class="mac-dot" style="background:#28C840;"></div><div style="flex:1;text-align:center;font-size:9px;color:rgba(255,255,255,.3);font-family:monospace;">BioClaw · localhost:3000</div></div><div class="dt-body"><video src="./mp4/localweb.mp4" autoplay loop muted playsinline webkit-playsinline preload="auto"></video></div></div><div class="mac-stand" style="background:#333;"></div></div></div><div class="gc-plat-label">Local Web</div></div>
+      <div class="gallery-card"><div class="gc-body"><div class="phone"><div class="phone-notch"></div><div class="phone-screen"><video src="./mp4/qq.mp4" autoplay loop muted playsinline webkit-playsinline preload="auto" style="width:100%;height:100%;object-fit:cover;"></video></div></div></div><div class="gc-plat-label">QQ</div></div>
+      <div class="gallery-card"><div class="gc-body"><div class="phone"><div class="phone-notch"></div><div class="phone-screen"><video src="./mp4/wecom.mp4" autoplay loop muted playsinline webkit-playsinline preload="auto" style="width:100%;height:100%;object-fit:cover;"></video></div></div></div><div class="gc-plat-label">企业微信 WeCom</div></div>
+    </div>
+  </div>
+  <div class="gallery-nav">
+    <button class="g-arrow" onclick="galleryScroll(-1)">&#8249;</button>
+    <div class="gallery-dots" id="galleryDots"><span class="g-dot active" onclick="galleryGoTo(0)"></span><span class="g-dot" onclick="galleryGoTo(1)"></span><span class="g-dot" onclick="galleryGoTo(2)"></span><span class="g-dot" onclick="galleryGoTo(3)"></span><span class="g-dot" onclick="galleryGoTo(4)"></span><span class="g-dot" onclick="galleryGoTo(5)"></span><span class="g-dot" onclick="galleryGoTo(6)"></span><span class="g-dot" onclick="galleryGoTo(7)"></span></div>
+    <button class="g-arrow" onclick="galleryScroll(1)">&#8250;</button>
+  </div>
+</section>
+
+<hr class="divider">
+
+<section id="demos" style="padding:4.5rem 0;">
+  <div style="max-width:1000px;margin:0 auto;padding:0 2.5rem .5rem;" class="reveal">
+    <div class="s-label">Capabilities</div>
+    <h2 class="s-title">What BioClaw can do</h2>
+    <p class="s-desc">Send a natural language message — BioClaw handles the rest, returning results directly to your chat.</p>
+  </div>
+  <div class="demo-scroll-outer">
+    <div class="demo-scroll-track">
+      <div class="demo-scroll-card"><div class="demo-scroll-icon" style="background:var(--accent-light);border:1px solid var(--accent-mid);">🧬</div><div class="demo-scroll-num">01</div><h3>Workspace Triage</h3><p>Analyze files and recommend the best next analysis steps.</p><span class="demo-scroll-arrow">↗</span></div>
+      <div class="demo-scroll-card"><div class="demo-scroll-icon" style="background:#eef0fb;border:1px solid #c8cdf0;">🔬</div><div class="demo-scroll-num">02</div><h3>FastQC Quality Control</h3><p>Run FastQC on FASTQ files and deliver the QC report.</p><span class="demo-scroll-arrow">↗</span></div>
+      <div class="demo-scroll-card"><div class="demo-scroll-icon" style="background:#fef3e2;border:1px solid #f0d9a8;">🔍</div><div class="demo-scroll-num">03</div><h3>BLAST Sequence Search</h3><p>BLAST a protein sequence against NCBI nr database.</p><span class="demo-scroll-arrow">↗</span></div>
+      <div class="demo-scroll-card"><div class="demo-scroll-icon" style="background:#e8f5ee;border:1px solid #b8dfc8;">📊</div><div class="demo-scroll-num">04</div><h3>Volcano Plot Generation</h3><p>Create differential expression plots from a CSV file.</p><span class="demo-scroll-arrow">↗</span></div>
+      <div class="demo-scroll-card"><div class="demo-scroll-icon" style="background:#fce8ec;border:1px solid #f0b8c4;">🧪</div><div class="demo-scroll-num">05</div><h3>Protein Structure Rendering</h3><p>Fetch a PDB structure, render with PyMOL, send image.</p><span class="demo-scroll-arrow">↗</span></div>
+      <div class="demo-scroll-card"><div class="demo-scroll-icon" style="background:#e8f0fa;border:1px solid #b0ccee;">📚</div><div class="demo-scroll-num">06</div><h3>PubMed Literature Search</h3><p>Search PubMed and provide structured paper summaries.</p><span class="demo-scroll-arrow">↗</span></div>
+      <div class="demo-scroll-card"><div class="demo-scroll-icon" style="background:#f0eefb;border:1px solid #c8c0ee;">⚗️</div><div class="demo-scroll-num">07</div><h3>Hydrogen Bond Analysis</h3><p>Visualize H-bonds between ligand and protein.</p><span class="demo-scroll-arrow">↗</span></div>
+      <div class="demo-scroll-card"><div class="demo-scroll-icon" style="background:#fef8e2;border:1px solid #ede0a0;">🎯</div><div class="demo-scroll-num">08</div><h3>Binding Site Visualization</h3><p>Show residues within 5Å of a ligand as an image.</p><span class="demo-scroll-arrow">↗</span></div>
+    </div>
+  </div>
+  <div class="demo-nav">
+    <button class="g-arrow" onclick="demoScroll(-1)">&#8249;</button>
+    <div class="demo-dots" id="demoDots"><span class="g-dot active" onclick="demoGoTo(0)"></span><span class="g-dot" onclick="demoGoTo(1)"></span><span class="g-dot" onclick="demoGoTo(2)"></span><span class="g-dot" onclick="demoGoTo(3)"></span><span class="g-dot" onclick="demoGoTo(4)"></span><span class="g-dot" onclick="demoGoTo(5)"></span><span class="g-dot" onclick="demoGoTo(6)"></span><span class="g-dot" onclick="demoGoTo(7)"></span></div>
+    <button class="g-arrow" onclick="demoScroll(1)">&#8250;</button>
+  </div>
+</section>
+
+<hr class="divider">
+
+<section class="section" id="tools">
+  <div class="reveal"><div class="s-label">Toolkit &amp; skills</div><h2 class="s-title">A full bioinformatics toolkit</h2><p class="s-desc">Command-line tools and Python libraries pre-installed in Docker, plus 25 built-in skill guides for analyses, omics workflows, and public-database lookups — all reachable in natural language.</p></div>
+  <div class="reveal tools-cloud" style="transition-delay:.1s"><div class="cloud-canvas" id="cloudCanvas"></div></div>
+  <div class="reveal" style="transition-delay:.25s;margin-top:3rem;">
+    <div class="s-label">Agent skills</div>
+    <h3 class="s-title" style="font-size:clamp(1.35rem,2.5vw,1.85rem);margin-bottom:1.25rem;">25+ runtime skills</h3>
+    <div style="display:inline-flex;align-items:center;gap:.55rem;font-family:var(--mono);font-size:clamp(.85rem,1.5vw,1rem);color:var(--accent);background:var(--accent-light);border:1px solid var(--accent-mid);padding:.55rem 1.25rem;border-radius:10px;margin-bottom:1.75rem;">
+      <span style="width:10px;height:10px;border-radius:50%;background:var(--accent);display:inline-block;animation:blink 1.5s ease-in-out infinite;flex-shrink:0;"></span>
+      Actively growing
+    </div>
+  </div>
+  <div class="skill-groups reveal" style="transition-delay:.3s">
+    <div class="skill-group"><h4>Workflows &amp; utilities</h4><div class="skill-tags"><a class="skill-tag" href="https://github.com/Runchuan-BU/BioClaw/tree/main/container/skills/bio-tools" target="_blank" rel="noopener noreferrer">bio-tools</a><a class="skill-tag" href="https://github.com/Runchuan-BU/BioClaw/tree/main/container/skills/blast-search" target="_blank" rel="noopener noreferrer">blast-search</a><a class="skill-tag" href="https://github.com/Runchuan-BU/BioClaw/tree/main/container/skills/sequence-analysis" target="_blank" rel="noopener noreferrer">sequence-analysis</a><a class="skill-tag" href="https://github.com/Runchuan-BU/BioClaw/tree/main/container/skills/pubmed-search" target="_blank" rel="noopener noreferrer">pubmed-search</a><a class="skill-tag" href="https://github.com/Runchuan-BU/BioClaw/tree/main/container/skills/sds-gel-review" target="_blank" rel="noopener noreferrer">sds-gel-review</a><a class="skill-tag" href="https://github.com/Runchuan-BU/BioClaw/tree/main/container/skills/agent-browser" target="_blank" rel="noopener noreferrer">agent-browser</a></div></div>
+    <div class="skill-group"><h4>Omics &amp; structural biology</h4><div class="skill-tags"><a class="skill-tag" href="https://github.com/Runchuan-BU/BioClaw/tree/main/container/skills/scrna-preprocessing-clustering" target="_blank" rel="noopener noreferrer">scrna-preprocessing-clustering</a><a class="skill-tag" href="https://github.com/Runchuan-BU/BioClaw/tree/main/container/skills/cell-annotation" target="_blank" rel="noopener noreferrer">cell-annotation</a><a class="skill-tag" href="https://github.com/Runchuan-BU/BioClaw/tree/main/container/skills/chip-seq" target="_blank" rel="noopener noreferrer">chip-seq</a><a class="skill-tag" href="https://github.com/Runchuan-BU/BioClaw/tree/main/container/skills/atac-seq" target="_blank" rel="noopener noreferrer">atac-seq</a><a class="skill-tag" href="https://github.com/Runchuan-BU/BioClaw/tree/main/container/skills/differential-expression" target="_blank" rel="noopener noreferrer">differential-expression</a><a class="skill-tag" href="https://github.com/Runchuan-BU/BioClaw/tree/main/container/skills/proteomics" target="_blank" rel="noopener noreferrer">proteomics</a><a class="skill-tag" href="https://github.com/Runchuan-BU/BioClaw/tree/main/container/skills/metagenomics" target="_blank" rel="noopener noreferrer">metagenomics</a><a class="skill-tag" href="https://github.com/Runchuan-BU/BioClaw/tree/main/container/skills/structural-biology" target="_blank" rel="noopener noreferrer">structural-biology</a></div></div>
+    <div class="skill-group"><h4>Database &amp; API queries</h4><div class="skill-tags"><a class="skill-tag" href="https://github.com/Runchuan-BU/BioClaw/tree/main/container/skills/query-alphafold" target="_blank" rel="noopener noreferrer">query-alphafold</a><a class="skill-tag" href="https://github.com/Runchuan-BU/BioClaw/tree/main/container/skills/query-clinvar" target="_blank" rel="noopener noreferrer">query-clinvar</a><a class="skill-tag" href="https://github.com/Runchuan-BU/BioClaw/tree/main/container/skills/query-ensembl" target="_blank" rel="noopener noreferrer">query-ensembl</a><a class="skill-tag" href="https://github.com/Runchuan-BU/BioClaw/tree/main/container/skills/query-geo" target="_blank" rel="noopener noreferrer">query-geo</a><a class="skill-tag" href="https://github.com/Runchuan-BU/BioClaw/tree/main/container/skills/query-interpro" target="_blank" rel="noopener noreferrer">query-interpro</a><a class="skill-tag" href="https://github.com/Runchuan-BU/BioClaw/tree/main/container/skills/query-kegg" target="_blank" rel="noopener noreferrer">query-kegg</a><a class="skill-tag" href="https://github.com/Runchuan-BU/BioClaw/tree/main/container/skills/query-opentarget" target="_blank" rel="noopener noreferrer">query-opentarget</a><a class="skill-tag" href="https://github.com/Runchuan-BU/BioClaw/tree/main/container/skills/query-pdb" target="_blank" rel="noopener noreferrer">query-pdb</a><a class="skill-tag" href="https://github.com/Runchuan-BU/BioClaw/tree/main/container/skills/query-reactome" target="_blank" rel="noopener noreferrer">query-reactome</a><a class="skill-tag" href="https://github.com/Runchuan-BU/BioClaw/tree/main/container/skills/query-stringdb" target="_blank" rel="noopener noreferrer">query-stringdb</a><a class="skill-tag" href="https://github.com/Runchuan-BU/BioClaw/tree/main/container/skills/query-uniprot" target="_blank" rel="noopener noreferrer">query-uniprot</a></div></div>
+  </div>
+  <div class="reveal" style="transition-delay:.35s;margin-top:1.5rem;">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.35rem;display:flex;align-items:center;gap:.75rem;box-shadow:var(--shadow);">
+      <span style="font-size:1.1rem;">🚀</span>
+      <div><div style="font-family:var(--mono);font-size:.78rem;font-weight:500;color:var(--ink);margin-bottom:.2rem;">More skills in development</div><div style="font-size:.78rem;color:var(--ink2);line-height:1.55;">New analysis workflows, database integrations, and visualization tools are continuously being added. Check back or star the repo to stay updated.</div></div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<section class="section" id="arch">
+  <div class="reveal"><div class="s-label">Architecture</div><h2 class="s-title">How it works</h2><p class="s-desc">Built on NanoClaw. Each group runs in an isolated Docker container with a full bioinformatics environment. Powered by the <a href="https://github.com/zaixizhang/STELLA" style="color:var(--accent);" target="_blank">STELLA</a> framework.</p></div>
+  <div class="arch-card reveal" style="transition-delay:.1s">
+    <div class="arch-bar"><div class="tdot r"></div><div class="tdot y"></div><div class="tdot g"></div></div>
+    <div class="arch-inner">
+      <div class="arch-flow"><span class="arch-node ag">Chat</span><span class="arch-arrow">──►</span><span class="arch-node ag">Node.js Orchestrator</span><span class="arch-arrow">──►</span><span class="arch-node ag">SQLite</span><span class="arch-arrow">──►</span><span class="arch-node ag">Docker Container</span></div>
+      <div class="arch-vline">│</div>
+      <div class="arch-sdk ag">Claude Agent SDK</div>
+      <div class="arch-vline">│</div>
+      <div class="arch-box"><div class="arch-box-title">Bioinformatics Toolbox</div><div class="arch-box-tools"><span class="aw">BLAST+</span><span class="aw">SAMtools</span><span class="aw">BWA</span><span class="aw">PyMOL</span><span class="aw">FastQC</span><span class="aw">minimap2</span><span class="aw">scanpy</span><span class="aw">PyDESeq2</span><span class="aw">BioPython</span><span class="aw">pandas</span><span class="aw">matplotlib</span><span class="aw">RDKit</span></div></div>
+      <div class="arch-notes"><div><span class="ag">Container Isolation</span> — each group has its own Docker workspace</div><div><span class="ag">Filesystem IPC</span> — results delivered back via filesystem</div><div><span class="ag">Channel Agnostic</span> — Feishu · WeCom · Discord · Slack · WeChat · QQ · local web</div></div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<section class="section" id="start">
+  <div class="reveal"><div class="s-label">Quick Start</div><h2 class="s-title">Up and running in minutes</h2><p class="s-desc">Requires Node.js 20+ and Docker Desktop. Supports Anthropic API and OpenRouter.</p></div>
+  <div class="install-card reveal" style="transition-delay:.1s">
+    <div class="install-bar2"><div class="tdot r"></div><div class="tdot y"></div><div class="tdot g"></div></div>
+    <div class="install-body"><div class="install-cmd"><span class="p">$</span>git clone https://github.com/Runchuan-BU/BioClaw.git &amp;&amp; cd BioClaw &amp;&amp; npm install &amp;&amp; npm start</div><button class="cpbtn" onclick="copyCmd()">copy</button></div>
+    <div class="install-note">Full setup guide → <a href="https://github.com/Runchuan-BU/BioClaw#quick-start" target="_blank">GitHub README ↗</a></div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<section class="section" id="citation">
+  <div class="reveal"><div class="s-label">Citation</div><h2 class="s-title">Cite this work</h2><p class="s-desc">BioClaw is described in our preprint, and builds on the <a href="https://github.com/zaixizhang/STELLA" style="color:var(--accent);" target="_blank">STELLA</a> framework. If you use it in research, please cite the BioClaw preprint (and STELLA where relevant).</p></div>
+  <div class="reveal" style="transition-delay:.1s">
+    <div class="cite-wrap">
+      <div class="cite-header"><span class="cite-header-title">BibTeX · BioClaw</span><button class="cite-copy" onclick="copyCite(this,'citeTextBioClaw')">copy</button></div>
+      <div class="cite-body" id="citeTextBioClaw">@article{xu2026bioclaw,
+  title={BioClaw: Human-Bot Research Collaboration Ecosystems in Group Chats},
+  author={Xu, Mingyang and Yan, Jiaxian and Feng, Runchuan and Cai, Qingran and Zhang, Peng and Zhao, Chuang and He, Cao and Wei, Zongting and Li, Jianping and Lin, Shiyi and Dong, Hongyu and Jin, Ruofan and Hou, Tingjun and Liu, Qi and Zhang, Zaixi},
+  journal={bioRxiv},
+  year={2026},
+  doi={10.64898/2026.04.11.716807}
+}</div>
+    </div>
+    <div class="cite-links"><a href="https://www.biorxiv.org/content/10.64898/2026.04.11.716807v1" target="_blank">📄 bioRxiv</a></div>
+  </div>
+  <div class="reveal" style="transition-delay:.15s">
+    <div class="cite-wrap">
+      <div class="cite-header"><span class="cite-header-title">BibTeX · STELLA</span><button class="cite-copy" onclick="copyCite(this,'citeTextStella')">copy</button></div>
+      <div class="cite-body" id="citeTextStella">@article{jin2025stella,
+  title={STELLA: Towards a Biomedical World Model with Self-Evolving Multimodal Agents},
+  author={Jin, Ruofan and Xu, Mingyang and Meng, Fei and Wan, Guancheng and Cai, Qingran and Jiang, Yize and Han, Jin and Chen, Yuanyuan and Lu, Wanqing and Wang, Mengyang and Lan, Zhiqian and Jiang, Yuxuan and Liu, Junhong and Wang, Dongyao and Cong, Le and Zhang, Zaixi},
+  journal={bioRxiv},
+  year={2025},
+  doi={10.1101/2025.07.01.662467}
+}</div>
+    </div>
+    <div class="cite-links"><a href="https://www.biorxiv.org/content/10.1101/2025.07.01.662467v2" target="_blank">📄 bioRxiv</a><a href="https://arxiv.org/abs/2507.02004" target="_blank">📑 arXiv 2507.02004</a></div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<section class="section" id="contact">
+  <div class="reveal"><div class="s-label">Contact</div><h1 class="s-title">Get in touch</h1><p class="s-desc">Questions about BioClaw or this site — send a message below.</p></div>
+  <div class="reveal" style="transition-delay:.05s;max-width:1000px;display:flex;gap:3rem;flex-wrap:wrap;align-items:flex-start;">
+    <div class="contact-wrap" style="flex:1;min-width:300px;margin-top:0;">
+      <form class="contact-form" id="contactForm" action="https://formsubmit.co/ajax/scinetics.bioclaw@gmail.com" method="POST">
+        <input type="hidden" name="_subject" value="BioClaw website message"/>
+        <input type="text" name="_honey" class="contact-hp" tabindex="-1" autocomplete="off" aria-hidden="true"/>
+        <div class="form-field"><label for="contact-name">Name</label><input id="contact-name" type="text" name="name" required autocomplete="name" placeholder="Your name"/></div>
+        <div class="form-field"><label for="contact-email">Email</label><input id="contact-email" type="email" name="email" required autocomplete="email" placeholder="you@example.com"/></div>
+        <div class="form-field"><label for="contact-message">Message</label><textarea id="contact-message" name="message" required placeholder="How can we help?"></textarea></div>
+        <button type="submit" class="btn-primary contact-submit" id="contactSubmit">Send message</button>
+        <p class="contact-status" id="contactStatus" hidden></p>
+      </form>
+    </div>
+    <div style="flex:0 0 320px;margin-top:.5rem;">
+      <div style="font-family:var(--serif);font-size:1.25rem;color:var(--ink);margin-bottom:1.1rem;">We'd love to hear from you</div>
+      <div style="font-size:1.05rem;color:var(--ink2);line-height:1.85;margin-bottom:1.5rem;">Research collaboration · Integration partnership · Investment inquiry · Bug report · Feature request · General questions — all welcome.</div>
+      <div style="display:flex;align-items:center;gap:.55rem;font-family:var(--mono);font-size:.85rem;color:var(--ink2);background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.65rem .85rem;margin-bottom:1.6rem;">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><rect x="3" y="5" width="18" height="14" rx="2"/><polyline points="3 7 12 13 21 7"/></svg>
+        <a href="javascript:void(0)" onclick="openEmailModal()" style="color:var(--accent);text-decoration:none;word-break:break-all;">scinetics.bioclaw@gmail.com</a>
+      </div>
+      <a href="https://wj.qq.com/s2/25961838/97f5/" target="_blank" rel="noopener noreferrer" class="btn-primary" style="font-size:.88rem;padding:.75rem 1.5rem;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>Apply as Co-creation Partner</a>
+      <p style="font-size:.92rem;color:var(--ink3);margin-top:.85rem;line-height:1.65;">Join our open co-creation program — help shape the future of BioClaw together.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<footer>
+  <span>BioClaw · Built on <a href="https://github.com/Runchuan-BU/BioClaw" target="_blank">NanoClaw</a> + <a href="https://github.com/zaixizhang/STELLA" target="_blank">STELLA</a> · Friend: <a href="https://claw4science.org" target="_blank">Claw4Science</a></span>
+  <a href="https://github.com/IveGotMagicBean/BioClaw-Page" target="_blank">Contribute to this site ↗</a>
+</footer>
+
+<script>
+document.querySelectorAll('.nav-links a[href^="#"]').forEach(function(link){link.addEventListener('click',function(e){e.preventDefault();var target=document.querySelector(this.getAttribute('href'));if(target){var top=target.getBoundingClientRect().top+window.pageYOffset-70;window.scrollTo({top:top,behavior:'smooth'});}});});
+var html=document.documentElement;var savedTheme=localStorage.getItem('theme');if(savedTheme==='dark')html.classList.add('dark');else if(savedTheme==='light')html.classList.add('light');else html.classList.add('light');
+function toggleTheme(){var isDark=html.classList.contains('dark')||(!html.classList.contains('light')&&matchMedia('(prefers-color-scheme:dark)').matches);if(isDark){html.classList.remove('dark');html.classList.add('light');localStorage.setItem('theme','light');}else{html.classList.remove('light');html.classList.add('dark');localStorage.setItem('theme','dark');}}
+function copyCmd(){navigator.clipboard.writeText('git clone https://github.com/Runchuan-BU/BioClaw.git && cd BioClaw && npm install && npm start');var b=document.querySelector('.cpbtn');b.textContent='copied ✓';setTimeout(function(){b.textContent='copy';},2000);}
+function copyCite(btn,id){var text=document.getElementById(id).textContent;navigator.clipboard.writeText(text);var orig=btn.textContent;btn.textContent='copied ✓';setTimeout(function(){btn.textContent=orig;},2000);}
+var revObs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting)e.target.classList.add('visible');});},{threshold:0.1});document.querySelectorAll('.reveal').forEach(function(el){revObs.observe(el);if(el.getBoundingClientRect().top<window.innerHeight)el.classList.add('visible');});
+var contactForm=document.getElementById('contactForm');if(contactForm){contactForm.addEventListener('submit',function(e){e.preventDefault();var st=document.getElementById('contactStatus');var btn=document.getElementById('contactSubmit');btn.disabled=true;btn.textContent='Sending…';st.hidden=true;st.classList.remove('err');var data=new FormData(contactForm);fetch(contactForm.action,{method:'POST',body:data,headers:{'Accept':'application/json'}}).then(function(res){if(res.ok){st.textContent='✓ Message sent successfully! We will get back to you soon.';st.hidden=false;st.classList.remove('err');contactForm.reset();btn.textContent='Sent ✓';setTimeout(function(){btn.disabled=false;btn.textContent='Send message';},3000);}else{throw new Error('Server error');}}).catch(function(){st.textContent='✗ Failed to send. Please try again or email us directly at scinetics.bioclaw@gmail.com';st.hidden=false;st.classList.add('err');btn.disabled=false;btn.textContent='Send message';});});}
+var track=document.getElementById('galleryTrack');var cards=track?Array.from(track.querySelectorAll('.gallery-card')):[];var pills=Array.from(document.querySelectorAll('#galleryDots .g-dot'));var activeIdx=0;
+function updateGalleryPadding(){if(!track||!cards.length)return;var trackW=track.parentElement.offsetWidth;var firstW=cards[0].offsetWidth;var lastW=cards[cards.length-1].offsetWidth;track.style.paddingLeft=Math.max(40,(trackW-firstW)/2)+'px';track.style.paddingRight=Math.max(40,(trackW-lastW)/2)+'px';}updateGalleryPadding();window.addEventListener('resize',updateGalleryPadding);
+function updateGalleryClasses(){if(!track||!cards.length)return;var center=track.getBoundingClientRect().left+track.offsetWidth/2;var closest=0,minD=Infinity;cards.forEach(function(c,i){var cx=c.getBoundingClientRect().left+c.offsetWidth/2;var d=Math.abs(cx-center);if(d<minD){minD=d;closest=i;}});cards.forEach(function(c,i){c.classList.remove('gc-active','gc-near');if(i===closest)c.classList.add('gc-active');else if(Math.abs(i-closest)===1)c.classList.add('gc-near');});if(closest!==activeIdx){activeIdx=closest;pills.forEach(function(p,i){p.classList.toggle('active',i===closest);});}}
+function galleryGoTo(idx){activeIdx=Math.max(0,Math.min(cards.length-1,idx));var trackRect=track.getBoundingClientRect();var cardRect=cards[activeIdx].getBoundingClientRect();var cardCenter=cardRect.left+cardRect.width/2;var trackCenter=trackRect.left+trackRect.width/2;track.scrollBy({left:cardCenter-trackCenter,behavior:'smooth'});pills.forEach(function(p,i){p.classList.toggle('active',i===activeIdx);});}
+function galleryScroll(dir){galleryGoTo(activeIdx+dir);}
+if(track){track.addEventListener('scroll',updateGalleryClasses,{passive:true});updateGalleryClasses();var galAuto=setInterval(function(){galleryGoTo(activeIdx+1>=cards.length?0:activeIdx+1);},5000);track.addEventListener('mouseenter',function(){clearInterval(galAuto);});track.addEventListener('mouseleave',function(){galAuto=setInterval(function(){galleryGoTo(activeIdx+1>=cards.length?0:activeIdx+1);},5000);});}
+(function(){var tools=[{name:'BLAST+',tip:'Sequence similarity search against NCBI databases',size:2.4,cat:'search'},{name:'BWA',tip:'Short read alignment to reference genomes',size:1.9,cat:'align'},{name:'minimap2',tip:'Long read alignment',size:1.5,cat:'align'},{name:'FastQC',tip:'Sequencing quality control',size:1.8,cat:'qc'},{name:'fastp',tip:'Read trimming and filtering',size:1.3,cat:'qc'},{name:'PyMOL',tip:'3D molecular visualization',size:2.1,cat:'struct'},{name:'scanpy',tip:'Single-cell RNA-seq analysis',size:1.7,cat:'analysis'},{name:'PyDESeq2',tip:'Differential expression analysis',size:1.5,cat:'analysis'},{name:'RDKit',tip:'Cheminformatics & molecular descriptors',size:1.5,cat:'chem'},{name:'matplotlib',tip:'Publication-quality plots',size:2.0,cat:'viz'},{name:'seaborn',tip:'Statistical data visualization',size:1.4,cat:'viz'},{name:'SAMtools',tip:'BAM file manipulation',size:1.8,cat:'file'},{name:'BEDTools',tip:'Genome arithmetic',size:1.5,cat:'file'},{name:'BioPython',tip:'Biological computation in Python',size:1.7,cat:'core'},{name:'pandas',tip:'Tabular data wrangling',size:1.9,cat:'core'},{name:'NCBI',tip:'Database query interface',size:1.3,cat:'search'},{name:'PDB',tip:'Protein Data Bank access',size:1.2,cat:'struct'},{name:'PubMed',tip:'Literature mining',size:1.6,cat:'search'},{name:'Docker',tip:'Isolated container environment',size:1.4,cat:'infra'},{name:'MultiQC',tip:'Aggregate QC reports',size:1.2,cat:'qc'}];var catColors={search:'#2d6a4f',align:'#1976D2',qc:'#2e7d32',struct:'#7B1FA2',analysis:'#E65100',chem:'#00897B',viz:'#F57C00',file:'#37474F',core:'#1a5c38',infra:'#546E7A'};var darkCatColors={search:'#66bb6a',align:'#64b5f6',qc:'#81c784',struct:'#ce93d8',analysis:'#ffb74d',chem:'#4db6ac',viz:'#ffa726',file:'#90a4ae',core:'#4dbb78',infra:'#78909c'};var canvas=document.getElementById('cloudCanvas');if(!canvas)return;var w=820,h=420;var placed=[];function checkOverlap(x,y,bw,bh){for(var i=0;i<placed.length;i++){var p=placed[i];if(!(x+bw<p.x||x>p.x+p.w||y+bh<p.y||y>p.y+p.h))return true;}return false;}tools.sort(function(a,b){return b.size-a.size;});tools.forEach(function(tool){var fontSize=tool.size*1.15;var el=document.createElement('div');var isLg=tool.size>=1.7;el.className='cloud-word '+(isLg?'cw-lg':'cw-sm');el.style.fontSize=fontSize+'rem';var isDark=document.documentElement.classList.contains('dark')||(!document.documentElement.classList.contains('light')&&matchMedia('(prefers-color-scheme:dark)').matches);el.style.color=isDark?darkCatColors[tool.cat]:catColors[tool.cat];el.style.opacity=String(0.55+tool.size*0.2);el.setAttribute('data-cat',tool.cat);var anims=['cloudFloat','cloudFloat2','cloudFloat3'];el.style.animation=anims[Math.floor(Math.random()*3)]+' '+(5+Math.random()*4).toFixed(1)+'s ease-in-out '+(Math.random()*3).toFixed(1)+'s infinite';el.innerHTML=tool.name+'<div class="cw-tip">'+tool.tip+'</div>';el.style.visibility='hidden';canvas.appendChild(el);var bw=el.offsetWidth+18;var bh=el.offsetHeight+14;el.style.visibility='';var cx=w/2,cy=h/2;var angle=Math.random()*Math.PI*2;var radius=0;var found=false;for(var attempt=0;attempt<800;attempt++){var px=cx+Math.cos(angle)*radius-bw/2;var py=cy+Math.sin(angle)*radius-bh/2;if(px>=0&&py>=0&&px+bw<=w&&py+bh<=h&&!checkOverlap(px,py,bw,bh)){el.style.left=px+'px';el.style.top=py+'px';placed.push({x:px,y:py,w:bw,h:bh,cx:px+bw/2,cy:py+bh/2,cat:tool.cat});found=true;break;}angle+=0.55;radius+=0.85;}if(!found)canvas.removeChild(el);});var words=canvas.querySelectorAll('.cloud-word');words.forEach(function(w,i){var savedAnim=w.style.animation;w.style.animation='none';w.style.opacity='0';w.style.transform='scale(0.6) translateY(16px)';w.style.transition='opacity .5s ease, transform .5s ease';setTimeout(function(){var origOpacity=0.55+(parseFloat(w.style.fontSize)/1.15)*0.2/2.4*0.48;w.style.opacity=String(Math.min(origOpacity+0.3,1));w.style.transform='scale(1) translateY(0)';setTimeout(function(){w.style.transition='';w.style.animation=savedAnim;},600);},80+i*50);});})();
+var demoTrack=document.querySelector('.demo-scroll-track');var demoCards=demoTrack?Array.from(demoTrack.querySelectorAll('.demo-scroll-card')):[];var demoPills=Array.from(document.querySelectorAll('#demoDots .g-dot'));var demoIdx=0;
+function updateDemoPadding(){if(!demoTrack||!demoCards.length)return;var trackW=demoTrack.parentElement.offsetWidth;var firstW=demoCards[0].offsetWidth;var lastW=demoCards[demoCards.length-1].offsetWidth;demoTrack.style.paddingLeft=Math.max(40,(trackW-firstW)/2)+'px';demoTrack.style.paddingRight=Math.max(40,(trackW-lastW)/2)+'px';}updateDemoPadding();window.addEventListener('resize',updateDemoPadding);
+function demoUpdateDots(){if(!demoTrack||!demoCards.length)return;var center=demoTrack.getBoundingClientRect().left+demoTrack.offsetWidth/2;var closest=0,minD=Infinity;demoCards.forEach(function(c,i){var cx=c.getBoundingClientRect().left+c.offsetWidth/2;var d=Math.abs(cx-center);if(d<minD){minD=d;closest=i;}});if(closest!==demoIdx){demoIdx=closest;demoPills.forEach(function(p,i){p.classList.toggle('active',i===closest);});}}
+function demoGoTo(idx){if(!demoTrack||!demoCards.length)return;demoIdx=Math.max(0,Math.min(demoCards.length-1,idx));var trackRect=demoTrack.getBoundingClientRect();var cardRect=demoCards[demoIdx].getBoundingClientRect();var cardCenter=cardRect.left+cardRect.width/2;var trackCenter=trackRect.left+trackRect.width/2;demoTrack.scrollBy({left:cardCenter-trackCenter,behavior:'smooth'});demoPills.forEach(function(p,i){p.classList.toggle('active',i===demoIdx);});}
+function demoScroll(dir){demoGoTo(demoIdx+dir);}
+if(demoTrack){demoTrack.addEventListener('scroll',demoUpdateDots,{passive:true});demoTrack.addEventListener('wheel',function(e){if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){e.preventDefault();demoTrack.scrollBy({left:e.deltaY,behavior:'smooth'});}},{passive:false});var demoAuto=setInterval(function(){demoIdx=(demoIdx+1)%demoCards.length;demoGoTo(demoIdx);},4000);demoTrack.addEventListener('mouseenter',function(){clearInterval(demoAuto);});demoTrack.addEventListener('mouseleave',function(){demoAuto=setInterval(function(){demoIdx=(demoIdx+1)%demoCards.length;demoGoTo(demoIdx);},4000);});}
+document.querySelectorAll('video[autoplay]').forEach(function(v){v.play().catch(function(){});});document.addEventListener('touchstart',function(){document.querySelectorAll('video[autoplay]').forEach(function(v){v.play().catch(function(){});});},{once:true});
+</script>
+
+<!-- PDF Tech Doc Modal -->
+<div class="wc-overlay" id="docOverlay"></div>
+<div class="wc-modal" id="docModal" role="dialog" aria-modal="true" aria-label="Technical Document" style="width:min(900px,94vw);max-height:92vh;display:flex;flex-direction:column;">
+  <div class="wc-modal-head" style="flex-shrink:0;">
+    <div class="wc-modal-title-wrap">
+      <div class="wc-status-dot" style="background:var(--accent);box-shadow:0 0 0 3px var(--accent-light);animation:none;"></div>
+      <span class="wc-modal-title">Technical Document</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:.5rem;">
+      <a href="https://www.biorxiv.org/content/10.64898/2026.04.11.716807v1" target="_blank" class="gh-btn" style="font-size:.68rem;padding:.25rem .65rem;text-decoration:none;border-color:#b5343b;color:#b5343b;">
+        📄 bioRxiv
+      </a>
+      <button class="wc-close" id="docClose" aria-label="Close">
+        <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.6"><line x1="1" y1="1" x2="9" y2="9"/><line x1="9" y1="1" x2="1" y2="9"/></svg>
+      </button>
+    </div>
+  </div>
+  <div style="flex:1;min-height:0;position:relative;">
+    <iframe id="docIframe" style="width:100%;height:100%;border:none;display:block;min-height:70vh;" loading="lazy"></iframe>
+    <div id="docFallback" style="display:none;padding:3rem 2rem;text-align:center;">
+      <span style="font-size:2.5rem;display:block;margin-bottom:1rem;">📄</span>
+      <div style="font-family:var(--serif);font-size:1.1rem;color:var(--ink);margin-bottom:.5rem;">PDF preview not supported on this device</div>
+      <p style="font-size:.85rem;color:var(--ink2);margin-bottom:1.25rem;">Tap below to open or download the document.</p>
+      <a href="docs/BioClaw_Technical_Document.pdf" target="_blank" class="btn-primary" style="font-size:.82rem;padding:.6rem 1.6rem;">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Open PDF
+      </a>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  var overlay=document.getElementById('docOverlay');
+  var modal=document.getElementById('docModal');
+  var close=document.getElementById('docClose');
+  var iframe=document.getElementById('docIframe');
+  var fallback=document.getElementById('docFallback');
+  var pdfUrl='docs/BioClaw_Technical_Document.pdf';
+  var isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if(isMobile){iframe.style.display='none';fallback.style.display='block';}
+  window.openDocModal=function(){
+    modal.classList.add('open');overlay.classList.add('open');
+    if(!isMobile&&!iframe.src)iframe.src=pdfUrl;
+  };
+  function shut(){modal.classList.remove('open');overlay.classList.remove('open');}
+  close.addEventListener('click',shut);
+  overlay.addEventListener('click',shut);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&modal.classList.contains('open'))shut();});
+})();
+</script>
+
+<!-- Contact Email Popup -->
+<div class="wc-overlay" id="emailOverlay"></div>
+<div class="wc-modal" id="emailModal" role="dialog" aria-modal="true" aria-label="Contact Email" style="width:min(440px,92vw);">
+  <div class="wc-modal-head">
+    <div class="wc-modal-title-wrap">
+      <div class="wc-status-dot" style="background:var(--accent);box-shadow:0 0 0 3px var(--accent-light);animation:none;"></div>
+      <span class="wc-modal-title">Contact Email</span>
+    </div>
+    <button class="wc-close" id="emailClose" aria-label="Close"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.6"><line x1="1" y1="1" x2="9" y2="9"/><line x1="9" y1="1" x2="1" y2="9"/></svg></button>
+  </div>
+  <div class="wc-modal-body">
+    <div style="width:84px;height:84px;border-radius:22px;background:linear-gradient(135deg,var(--accent-light),var(--bg2));display:flex;align-items:center;justify-content:center;border:1px solid var(--accent-mid);">
+      <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><polyline points="3 7 12 13 21 7"/></svg>
+    </div>
+    <div style="text-align:center;font-family:var(--mono);font-size:.95rem;color:var(--ink);background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:.7rem 1rem;width:100%;word-break:break-all;letter-spacing:.01em;">scinetics.bioclaw@gmail.com</div>
+    <div style="display:flex;gap:.5rem;width:100%;">
+      <button onclick="copyEmail()" class="btn-primary" id="emailCopyBtn" style="flex:1;cursor:pointer;font:inherit;">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copy
+      </button>
+      <a href="mailto:scinetics.bioclaw@gmail.com" class="btn-primary" style="flex:1;background:transparent;color:var(--accent);border:1px solid var(--accent-mid);box-shadow:none;">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        Open Mail
+      </a>
+    </div>
+    <div class="wc-modal-hint">📧 Click "Copy" to copy the address</div>
+  </div>
+</div>
+<script>
+(function(){
+  var overlay=document.getElementById('emailOverlay');
+  var modal=document.getElementById('emailModal');
+  var close=document.getElementById('emailClose');
+  window.openEmailModal=function(){modal.classList.add('open');overlay.classList.add('open');};
+  function shut(){modal.classList.remove('open');overlay.classList.remove('open');}
+  close.addEventListener('click',shut);
+  overlay.addEventListener('click',shut);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&modal.classList.contains('open'))shut();});
+})();
+window.copyEmail=function(){
+  var btn=document.getElementById('emailCopyBtn');
+  var orig=btn.innerHTML;
+  navigator.clipboard.writeText('scinetics.bioclaw@gmail.com').then(function(){
+    btn.innerHTML='<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Copied';
+    setTimeout(function(){btn.innerHTML=orig;},1800);
+  }).catch(function(){btn.textContent='Copy failed';setTimeout(function(){btn.innerHTML=orig;},1800);});
+};
+</script>
+
+<!-- UI Update Notification Popup -->
+<div class="wc-overlay" id="updateOverlay"></div>
+<div class="wc-modal" id="updateModal" role="dialog" aria-modal="true" aria-label="UI Update Notice" style="width:min(580px,94vw);">
+  <div class="wc-modal-head">
+    <div class="wc-modal-title-wrap">
+      <div class="wc-status-dot" style="background:#f0c060;box-shadow:0 0 0 3px rgba(240,192,96,.22);animation:none;"></div>
+      <span class="wc-modal-title">✨ UI Update Notice</span>
+    </div>
+    <button class="wc-close" id="updateClose" aria-label="Close"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.6"><line x1="1" y1="1" x2="9" y2="9"/><line x1="9" y1="1" x2="1" y2="9"/></svg></button>
+  </div>
+  <div style="padding:1.25rem 1.5rem 1.5rem;">
+    <video id="updateVideo" src="mp4/localweb.mp4" autoplay muted playsinline controls style="width:100%;border-radius:10px;background:#111;display:block;max-height:340px;object-fit:contain;"></video>
+    <p style="font-family:var(--sans);font-size:.85rem;color:var(--ink2);text-align:center;margin-top:.9rem;line-height:1.65;">BioClaw now has a brand-new web interface — take a look around!</p>
+  </div>
+</div>
+<script>
+(function(){
+  var updOverlay=document.getElementById('updateOverlay');
+  var updModal=document.getElementById('updateModal');
+  var updClose=document.getElementById('updateClose');
+  var updVideo=document.getElementById('updateVideo');
+  function openUpdate(){updModal.classList.add('open');updOverlay.classList.add('open');updVideo.play().catch(function(){});}
+  function shutUpdate(){updModal.classList.remove('open');updOverlay.classList.remove('open');updVideo.pause();updVideo.currentTime=0;if(window.openWc)window.openWc();}
+  updClose.addEventListener('click',shutUpdate);
+  updOverlay.addEventListener('click',shutUpdate);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&updModal.classList.contains('open'))shutUpdate();});
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(openUpdate,600);});
+})();
+</script>
+
+<div class="wc-overlay" id="wcOverlay"></div>
+<div class="wc-modal" id="wcModal" role="dialog" aria-modal="true" aria-label="WeChat Group QR Code">
+  <div class="wc-modal-head"><div class="wc-modal-title-wrap"><div class="wc-status-dot"></div><span class="wc-modal-title">Join BioClaw Group</span></div><button class="wc-close" id="wcClose" aria-label="Close"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.6"><line x1="1" y1="1" x2="9" y2="9"/><line x1="9" y1="1" x2="1" y2="9"/></svg></button></div>
+  <div class="wc-modal-body"><div class="wc-qr-wrap"><img src="https://raw.githubusercontent.com/IveGotMagicBean/BioClaw-Page/main/png/wechat_group.png" alt="WeChat Group QR"/><div class="wc-qr-shine"></div></div><p class="wc-modal-sub">Scan to join the BioClaw WeChat group<br>— bioinformatics discussion &amp; support 🌿</p><div class="wc-modal-hint">📱 Open WeChat → Scan QR code</div></div>
+</div>
+<button class="wc-fab" id="wcFab" aria-label="WeChat Group"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.326.326 0 0 0 .167-.054l1.903-1.114a.864.864 0 0 1 .717-.098 10.16 10.16 0 0 0 2.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178A1.17 1.17 0 0 1 4.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178 1.17 1.17 0 0 1-1.162-1.178c0-.651.52-1.18 1.162-1.18zm5.34 2.867c-1.797-.052-3.746.512-5.28 1.786-1.72 1.428-2.687 3.72-1.78 6.22.942 2.453 3.666 4.229 6.884 4.229.826 0 1.622-.12 2.361-.336a.722.722 0 0 1 .598.082l1.584.926a.272.272 0 0 0 .14.047c.134 0 .24-.111.24-.247 0-.06-.023-.12-.038-.177l-.327-1.233a.49.49 0 0 1 .178-.554C22.078 18.489 23 17.15 23 15.66c0-3.318-3.315-5.76-6.062-4.802zm-3.386 2.714c.533 0 .966.441.966.983a.974.974 0 0 1-.966.983.974.974 0 0 1-.966-.983c0-.542.433-.983.966-.983zm5.686 0c.533 0 .966.441.966.983a.974.974 0 0 1-.966.983.974.974 0 0 1-.966-.983c0-.542.433-.983.966-.983z"/></svg></button>
+<script>
+(function(){var fab=document.getElementById('wcFab');var overlay=document.getElementById('wcOverlay');var modal=document.getElementById('wcModal');var close=document.getElementById('wcClose');function openModal(){modal.classList.add('open');overlay.classList.add('open');fab.style.animation='none';}function shutModal(){modal.classList.remove('open');overlay.classList.remove('open');fab.style.animation='';}window.openWc=openModal;fab.addEventListener('click',function(){modal.classList.contains('open')?shutModal():openModal();});close.addEventListener('click',shutModal);overlay.addEventListener('click',shutModal);document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!document.getElementById('updateModal').classList.contains('open'))shutModal();});})();
+</script>
+</body>
+</html>
