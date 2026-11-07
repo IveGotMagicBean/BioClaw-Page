@@ -275,42 +275,12 @@ window.copyEmail=function(){
 };
 </script>
 
-<!-- 界面更新通知弹窗 -->
-<div class="wc-overlay" id="updateOverlay"></div>
-<div class="wc-modal" id="updateModal" role="dialog" aria-modal="true" aria-label="界面更新通知" style="width:min(580px,94vw);">
-  <div class="wc-modal-head">
-    <div class="wc-modal-title-wrap">
-      <div class="wc-status-dot" style="background:#f0c060;box-shadow:0 0 0 3px rgba(240,192,96,.22);animation:none;"></div>
-      <span class="wc-modal-title">✨ 界面更新通知</span>
-    </div>
-    <button class="wc-close" id="updateClose" aria-label="关闭"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.6"><line x1="1" y1="1" x2="9" y2="9"/><line x1="9" y1="1" x2="1" y2="9"/></svg></button>
-  </div>
-  <div style="padding:1.25rem 1.5rem 1.5rem;">
-    <video id="updateVideo" src="mp4/localweb.mp4" autoplay muted playsinline controls style="width:100%;border-radius:10px;background:#111;display:block;max-height:340px;object-fit:contain;"></video>
-    <p style="font-family:var(--sans);font-size:.85rem;color:var(--ink2);text-align:center;margin-top:.9rem;line-height:1.65;">BioClaw 全新网页界面上线啦，快来体验一下吧！</p>
-  </div>
-</div>
-<script>
-(function(){
-  var updOverlay=document.getElementById('updateOverlay');
-  var updModal=document.getElementById('updateModal');
-  var updClose=document.getElementById('updateClose');
-  var updVideo=document.getElementById('updateVideo');
-  function openUpdate(){updModal.classList.add('open');updOverlay.classList.add('open');updVideo.play().catch(function(){});}
-  function shutUpdate(){updModal.classList.remove('open');updOverlay.classList.remove('open');updVideo.pause();updVideo.currentTime=0;}
-  updClose.addEventListener('click',shutUpdate);
-  updOverlay.addEventListener('click',shutUpdate);
-  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&updModal.classList.contains('open'))shutUpdate();});
-  document.addEventListener('DOMContentLoaded',function(){setTimeout(openUpdate,600);});
-})();
-</script>
-
 <!-- 微信小助手（可收起卡片 + 放大弹窗） -->
 <aside class="wc-card" id="wcCard" aria-label="微信小助手" title="点击放大">
   <button class="wc-card-min" id="wcCardMin" aria-label="收起" title="收起"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="1" y1="5" x2="9" y2="5"/></svg></button>
   <img src="png/wechat_assistant.jpg" alt="微信小助手二维码"/>
   <div class="wc-card-title"><span class="wc-card-dot"></span>微信小助手</div>
-  <div class="wc-card-sub">点击放大</div>
+  <div class="wc-card-sub">添加小助手进交流群</div>
 </aside>
 <button class="wc-icon" id="wcIcon" aria-label="微信小助手" title="展开微信小助手" hidden><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.326.326 0 0 0 .167-.054l1.903-1.114a.864.864 0 0 1 .717-.098 10.16 10.16 0 0 0 2.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178A1.17 1.17 0 0 1 4.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178 1.17 1.17 0 0 1-1.162-1.178c0-.651.52-1.18 1.162-1.18zm5.34 2.867c-1.797-.052-3.746.512-5.28 1.786-1.72 1.428-2.687 3.72-1.78 6.22.942 2.453 3.666 4.229 6.884 4.229.826 0 1.622-.12 2.361-.336a.722.722 0 0 1 .598.082l1.584.926a.272.272 0 0 0 .14.047c.134 0 .24-.111.24-.247 0-.06-.023-.12-.038-.177l-.327-1.233a.49.49 0 0 1 .178-.554C22.078 18.489 23 17.15 23 15.66c0-3.318-3.315-5.76-6.062-4.802zm-3.386 2.714c.533 0 .966.441.966.983a.974.974 0 0 1-.966.983.974.974 0 0 1-.966-.983c0-.542.433-.983.966-.983zm5.686 0c.533 0 .966.441.966.983a.974.974 0 0 1-.966.983.974.974 0 0 1-.966-.983c0-.542.433-.983.966-.983z"/></svg></button>
 
@@ -318,7 +288,7 @@ window.copyEmail=function(){
 <div class="wc-overlay" id="wcBigOverlay"></div>
 <div class="wc-modal" id="wcBigModal" role="dialog" aria-modal="true" aria-label="微信小助手二维码">
   <div class="wc-modal-head"><div class="wc-modal-title-wrap"><div class="wc-status-dot"></div><span class="wc-modal-title">微信小助手</span></div><button class="wc-close" id="wcBigClose" aria-label="关闭"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.6"><line x1="1" y1="1" x2="9" y2="9"/><line x1="9" y1="1" x2="1" y2="9"/></svg></button></div>
-  <div class="wc-modal-body"><div class="wc-big-qr"><img src="png/wechat_assistant.jpg" alt="微信小助手二维码"/></div><p class="wc-modal-sub">微信扫一扫，添加 BioClaw 小助手<br>咨询、讨论与反馈 🌿</p><div class="wc-modal-hint">📱 微信扫一扫 · 添加小助手</div></div>
+  <div class="wc-modal-body"><div class="wc-big-qr"><img src="png/wechat_assistant.jpg" alt="微信小助手二维码"/></div><p class="wc-modal-sub">添加小助手微信，拉你进 BioClaw 交流群<br>咨询、讨论与反馈 🌿</p><div class="wc-modal-hint">📱 微信扫一扫 · 添加小助手进群</div></div>
 </div>
 <script>
 (function(){
