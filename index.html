@@ -260,7 +260,9 @@ footer a:hover{color:var(--accent);}
 
 
 /* ===== WeChat Assistant Card ===== */
-.wc-card{position:fixed;bottom:1.5rem;right:1.5rem;z-index:500;width:128px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:.55rem .55rem .65rem;box-shadow:0 12px 36px rgba(0,0,0,.16),0 2px 8px rgba(0,0,0,.08);display:flex;flex-direction:column;align-items:center;gap:.45rem;}
+.wc-card{position:fixed;bottom:1.5rem;right:1.5rem;z-index:500;width:clamp(116px,9vw,168px);background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:.55rem .55rem .65rem;box-shadow:0 12px 36px rgba(0,0,0,.16),0 2px 8px rgba(0,0,0,.08);display:flex;flex-direction:column;align-items:center;gap:.45rem;transform-origin:100% 100%;transition:transform .25s ease;cursor:zoom-in;}
+.wc-card:hover{transform:scale(1.07);}
+.wc-card.zoomed,.wc-card.zoomed:hover{transform:scale(1.45);cursor:zoom-out;}
 .wc-card img{width:100%;aspect-ratio:888/1131;object-fit:cover;border-radius:10px;display:block;border:1px solid var(--border);}
 .wc-card-title{font-family:var(--mono);font-size:.72rem;font-weight:500;color:var(--ink);text-align:center;letter-spacing:.02em;display:flex;align-items:center;gap:.4rem;}
 .wc-card-dot{width:6px;height:6px;border-radius:50%;background:#07c160;flex-shrink:0;box-shadow:0 0 0 2px rgba(7,193,96,.18);}
@@ -708,10 +710,13 @@ window.copyEmail=function(){
 </script>
 
 <!-- WeChat Assistant QR (always visible) -->
-<aside class="wc-card" aria-label="WeChat Assistant">
+<aside class="wc-card" id="wcCard" aria-label="WeChat Assistant" title="Click to enlarge">
   <img src="png/wechat_assistant.jpg" alt="WeChat Assistant QR"/>
   <div class="wc-card-title"><span class="wc-card-dot"></span>WeChat Assistant</div>
   <div class="wc-card-sub">Scan to add us on WeChat</div>
 </aside>
+<script>
+(function(){var c=document.getElementById('wcCard');if(!c)return;c.addEventListener('click',function(){c.classList.toggle('zoomed');});document.addEventListener('keydown',function(e){if(e.key==='Escape')c.classList.remove('zoomed');});})();
+</script>
 </body>
 </html>
